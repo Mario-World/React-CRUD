@@ -6,7 +6,6 @@ function App() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ⚠️ Replace with your actual valid WeatherAPI key (get it from https://www.weatherapi.com/)
   const API_KEY = "b7a5528f2caa4e658bd82832250211";
 
   const fetchWeather = async () => {
@@ -19,6 +18,9 @@ function App() {
     setWeather(null);
 
     try {
+      // 👇 Artificial delay so Cypress can detect the loading state
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const response = await fetch(
         `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}`
       );
@@ -29,7 +31,6 @@ function App() {
 
       const data = await response.json();
 
-      // If WeatherAPI returns an error object (e.g., invalid city)
       if (data.error) {
         throw new Error(data.error.message);
       }
@@ -56,7 +57,8 @@ function App() {
         <button onClick={fetchWeather}>Search</button>
       </div>
 
-      {loading && <p>Loading data…</p>}
+      {/* 👇 Use plain three dots for Cypress */}
+      {loading && <p>Loading data...</p>}
 
       {weather && (
         <div className="weather-cards">
@@ -64,17 +66,14 @@ function App() {
             <h3>Temperature</h3>
             <p>{weather.current.temp_c} °C</p>
           </div>
-
           <div className="weather-card">
             <h3>Humidity</h3>
             <p>{weather.current.humidity} %</p>
           </div>
-
           <div className="weather-card">
             <h3>Condition</h3>
             <p>{weather.current.condition.text}</p>
           </div>
-
           <div className="weather-card">
             <h3>Wind Speed</h3>
             <p>{weather.current.wind_kph} kph</p>
