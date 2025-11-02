@@ -6,17 +6,21 @@ function App() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const API_KEY = "b7a5528f2caa4e658bd82832250211"; // Replace with your actual WeatherAPI key
+  // ⚠️ Replace with your actual valid WeatherAPI key (get it from https://www.weatherapi.com/)
+  const API_KEY = "b7a5528f2caa4e658bd82832250211";
 
   const fetchWeather = async () => {
-    if (!city.trim()) return;
+    if (!city.trim()) {
+      alert("Please enter a city name.");
+      return;
+    }
 
     setLoading(true);
     setWeather(null);
 
     try {
       const response = await fetch(
-        `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${city}`
+        `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}`
       );
 
       if (!response.ok) {
@@ -24,9 +28,16 @@ function App() {
       }
 
       const data = await response.json();
+
+      // If WeatherAPI returns an error object (e.g., invalid city)
+      if (data.error) {
+        throw new Error(data.error.message);
+      }
+
       setWeather(data);
     } catch (error) {
       alert("Failed to fetch weather data");
+      console.error("Weather API Error:", error);
     } finally {
       setLoading(false);
     }
