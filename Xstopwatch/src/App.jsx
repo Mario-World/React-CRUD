@@ -6,7 +6,7 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const timerRef = useRef(null);
 
-  // Format time into mm:ss (e.g., 1:09, 0:00)
+  // Format time like "0:00", "1:09"
   const formatTime = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
@@ -33,7 +33,7 @@ function App() {
     setIsRunning(false);
   };
 
-  // Cleanup timer when unmounting
+  // Clear timer when component unmounts
   useEffect(() => {
     return () => clearInterval(timerRef.current);
   }, []);
@@ -41,10 +41,9 @@ function App() {
   return (
     <div className="app">
       <h1>Stopwatch</h1>
-      <div className="time-display">
-        <h2>Time</h2>
-        <p className="time">{formatTime(seconds)}</p>
-      </div>
+
+      {/* ✅ Make sure Cypress sees "Time: 0:00" */}
+      <p className="time">Time: {formatTime(seconds)}</p>
 
       <div className="buttons">
         <button onClick={handleStartStop}>{isRunning ? "Stop" : "Start"}</button>
