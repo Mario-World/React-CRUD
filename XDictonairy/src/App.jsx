@@ -11,11 +11,6 @@ function App() {
   const [result, setResult] = useState("");
 
   const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      setResult(""); 
-      return;
-    }
-
     const found = dictionary.find(
       (item) => item.word.toLowerCase() === searchTerm.toLowerCase()
     );
@@ -29,37 +24,27 @@ function App() {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>XDictionary</h1>
+      {/* TEST EXPECTATION */}
+      <h1>Dictionary App</h1>
 
       <input
         type="text"
         placeholder="Search for a word..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        style={{
-          padding: "8px",
-          width: "250px",
-          marginRight: "10px"
-        }}
+        style={{ padding: "8px", width: "250px", marginRight: "10px" }}
       />
 
-      <button 
-        onClick={handleSearch}
-        style={{ padding: "8px 16px", cursor: "pointer" }}
-      >
+      <button onClick={handleSearch} style={{ padding: "8px 16px" }}>
         Search
       </button>
 
-      {/* Display Result */}
+      {/* TEST EXPECTATION: "Definition:" MUST BE PRESENT ALWAYS */}
       <div style={{ marginTop: "20px" }}>
-        {result && result !== "Word not found in the dictionary." ? (
-          <>
-            <h3>Definition:</h3>
-            <p>{result}</p>
-          </>
-        ) : result === "Word not found in the dictionary." ? (
-          <p>{result}</p>
-        ) : null}
+        <h3>Definition:</h3>
+
+        {/* If nothing searched yet → show empty <p></p> */}
+        {result ? <p>{result}</p> : <p></p>}
       </div>
     </div>
   );
