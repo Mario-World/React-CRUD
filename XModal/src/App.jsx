@@ -14,8 +14,8 @@ function App() {
   const openModal = () => setOpen(true);
 
   const closeModal = () => {
-    // Do NOT reset form here (Cypress error fix)
     setOpen(false);
+    setFormData({ username: "", email: "", phone: "", dob: "" });
   };
 
   const handleOutsideClick = (e) => {
@@ -24,77 +24,107 @@ function App() {
     }
   };
 
+  // -------------------------
+  // VALIDATION HELPERS
+  // -------------------------
+
+  // Email pattern as you provided
+  const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  const validateEmail = (email) => {
+    return emailPattern.test(email);
+  };
+
+  // Phone number pattern: xxx-xxx-xxxx
+  const phonePattern = /^[2-9]{1}[0-9]{2}-[0-9]{3}-[0-9]{4}$/;
+
+  const validatePhoneNumber = (phone) => {
+    return phonePattern.test(phone);
+  };
+
+  // DOB validation ensuring user is 18+
+  const calculateAge = (dob) => {
+    const today = new Date();
+    const birthDate = new Date(dob);
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    let m = today.getMonth() - birthDate.getMonth();
+
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // -------------------------
+  // FORM SUBMIT HANDLER
+  // -------------------------
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const { username, email, phone, dob } = formData;
 
-    // USERNAME
-    if (!username.trim()) {
+    // Username required
+    if (!username) {
       alert("Please enter Username.");
       return;
     }
 
-    // EMAIL
-    if (!email.trim()) {
+    // Email required
+    if (!email) {
       alert("Please enter Email.");
       return;
     }
 
-    if (!email.includes("@")) {
+    // Email invalid
+    if (!validateEmail(email)) {
       alert("Invalid email. Please check your email address.");
       return;
     }
 
-    // PHONE NUMBER
-    if (!phone.trim()) {
+    // Phone required
+    if (!phone) {
       alert("Please enter Phone Number.");
       return;
     }
 
-    if (!/^\d{10}$/.test(phone)) {
+    // Phone invalid
+    if (!validatePhoneNumber(phone)) {
       alert("Invalid phone number. Please enter a 10-digit phone number.");
       return;
     }
 
-    // DATE OF BIRTH
-    if (!dob.trim()) {
+    // DOB required
+    if (!dob) {
       alert("Please enter Date of Birth.");
       return;
     }
 
-    const today = new Date();
-    const entered = new Date(dob);
-
-    if (entered > today) {
-      alert("Invalid date of birth.");
+    // DOB invalid (future date or age < 18)
+    if (new Date(dob) > new Date() || calculateAge(dob) < 18) {
+      alert("Invalid date of birth. Date cannot be in the future.");
       return;
     }
 
-    // SUCCESS — Reset form ONLY after submit
-    setFormData({ username: "", email: "", phone: "", dob: "" });
+    // SUCCESS — close modal & reset state
     closeModal();
   };
 
   return (
     <div className="app">
-
       <h2>User Details Modal</h2>
 
       {!open && (
-        <button className="modal-open" onClick={openModal}>
-          Open Form
-        </button>
+        <button className="modal-open" onClick={openModal}>Open Form</button>
       )}
 
       {open && (
         <div className="modal" onClick={handleOutsideClick}>
           <div className="modal-content">
-
             <h2>Fill Details</h2>
 
             <form onSubmit={handleSubmit}>
-
               <label htmlFor="username">Username:</label>
               <input
                 id="username"
@@ -119,6 +149,7 @@ function App() {
               <input
                 id="phone"
                 type="text"
+                placeholder="123-456-7890"
                 value={formData.phone}
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
@@ -135,10 +166,7 @@ function App() {
                 }
               />
 
-              <button type="submit" className="submit-button" style={{ marginTop: "15px" }}>
-                Submit
-              </button>
-
+              <button className="submit-button" type="submit">Submit</button>
             </form>
 
           </div>
