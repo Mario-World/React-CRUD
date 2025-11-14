@@ -1,53 +1,79 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
-function App() {
-  const [dictionary] = useState([
-    { word: "React", meaning: "A JavaScript library for building user interfaces." },
-    { word: "Component", meaning: "A reusable building block in React." },
-    { word: "State", meaning: "An object that stores data for a component." }
+const XTable = () => {
+  const [data, setData] = useState([
+    { date: "2022-09-01", views: 100, article: "Article 1" },
+    { date: "2023-09-01", views: 100, article: "Article 1" },
+    { date: "2023-09-02", views: 150, article: "Article 2" },
+    { date: "2023-09-02", views: 120, article: "Article 3" },
+    { date: "2020-09-03", views: 200, article: "Article 4" },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [result, setResult] = useState("");
+  // ---------- Sort By Date ----------
+  const sortByDate = () => {
+    const sorted = [...data].sort((a, b) => {
+      // first sort by date (latest first)
+      const dateCompare = new Date(b.date) - new Date(a.date);
+      if (dateCompare !== 0) return dateCompare;
 
-  const handleSearch = () => {
-    const found = dictionary.find(
-      (item) => item.word.toLowerCase() === searchTerm.toLowerCase()
-    );
+      // if dates are same → sort by views (highest first)
+      return b.views - a.views;
+    });
 
-    if (found) {
-      setResult(found.meaning);
-    } else {
-      setResult("Word not found in the dictionary.");
-    }
+    setData(sorted);
+  };
+
+  // ---------- Sort By Views ----------
+  const sortByViews = () => {
+    const sorted = [...data].sort((a, b) => {
+      // first sort by views (highest first)
+      const viewCompare = b.views - a.views;
+      if (viewCompare !== 0) return viewCompare;
+
+      // if views are same → sort by date (latest first)
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    setData(sorted);
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      {/* TEST EXPECTATION */}
-      <h1>Dictionary App</h1>
+    <div style={{ padding: "20px" }}>
+      <h1>Date and Views Table</h1>
 
-      <input
-        type="text"
-        placeholder="Search for a word..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ padding: "8px", width: "250px", marginRight: "10px" }}
-      />
-
-      <button onClick={handleSearch} style={{ padding: "8px 16px" }}>
-        Search
+      <button onClick={sortByDate} style={{ marginRight: "10px" }}>
+        Sort by Date
       </button>
 
-      {/* TEST EXPECTATION: "Definition:" MUST BE PRESENT ALWAYS */}
-      <div style={{ marginTop: "20px" }}>
-        <h3>Definition:</h3>
+      <button onClick={sortByViews}>
+        Sort by Views
+      </button>
 
-        {/* If nothing searched yet → show empty <p></p> */}
-        {result ? <p>{result}</p> : <p></p>}
-      </div>
+      <table
+        border="1"
+        cellPadding="10"
+        style={{ borderCollapse: "collapse", marginTop: "20px" }}
+      >
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Views</th>
+            <th>Article</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {data.map((row, index) => (
+            <tr key={index}>
+              <td>{row.date}</td>
+              <td>{row.views}</td>
+              <td>{row.article}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
-}
+};
 
-export default App;
+export default XTable;
