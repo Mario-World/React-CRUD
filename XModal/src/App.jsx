@@ -14,21 +14,20 @@ function App() {
   const openModal = () => setOpen(true);
   const closeModal = () => {
     setOpen(false);
-    setFormData({
-      username: "",
-      email: "",
-      phone: "",
-      dob: ""
-    });
+    setFormData({ username: "", email: "", phone: "", dob: "" });
   };
 
   const handleOutsideClick = (e) => {
-    if (e.target.className === "modal") {
+    // close when clicking on overlay with class "modal"
+    if (e.target && e.target.className === "modal") {
       closeModal();
     }
   };
 
-  const handleSubmit = () => {
+  // handleSubmit wired to form onSubmit so tests using form submit will call this
+  const handleSubmit = (e) => {
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
+
     const { username, email, phone, dob } = formData;
 
     // Validate Username
@@ -64,32 +63,33 @@ function App() {
     }
     const today = new Date();
     const entered = new Date(dob);
-
     if (entered > today) {
       alert("Invalid date of birth. Date cannot be in the future.");
       return;
     }
 
-    // Success → reset UI
+    // success -> reset UI
     closeModal();
   };
 
   return (
     <div className="app">
-     <h1>User Details Modal</h1>
+    <h2>User Details Modal</h2>
       {!open && (
-        <button className ="modal-open" onClick={openModal}>Open Form</button>
+        <button className="modal-open" onClick={openModal}>Open Form</button>
       )}
 
       {open && (
         <div className="modal" onClick={handleOutsideClick}>
           <div className="modal-content">
-            <h2>Form</h2>
+            <h2>Fill Details</h2>
 
-            <form>
-              <label>Username:</label>
+            {/* form element present so Cypress can query it */}
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="username">Username:</label>
               <input
                 id="username"
+                name="username"
                 type="text"
                 value={formData.username}
                 onChange={(e) =>
@@ -97,9 +97,10 @@ function App() {
                 }
               />
 
-              <label>Email:</label>
+              <label htmlFor="email">Email:</label>
               <input
                 id="email"
+                name="email"
                 type="text"
                 value={formData.email}
                 onChange={(e) =>
@@ -107,9 +108,10 @@ function App() {
                 }
               />
 
-              <label>Phone Number:</label>
+              <label htmlFor="phone">Phone Number:</label>
               <input
                 id="phone"
+                name="phone"
                 type="text"
                 value={formData.phone}
                 onChange={(e) =>
@@ -117,20 +119,26 @@ function App() {
                 }
               />
 
-              <label>Date of Birth:</label>
+              <label htmlFor="dob">Date of Birth:</label>
               <input
                 id="dob"
+                name="dob"
                 type="date"
                 value={formData.dob}
                 onChange={(e) =>
                   setFormData({ ...formData, dob: e.target.value })
                 }
-              />
-            </form>
+              >
 
-            <button className="submit-button" onClick={handleSubmit}>
-              Submit
-            </button>
+              </input>
+
+              <div style={{ marginTop: "12px" }}>
+                {/* button type="submit" so form submission triggers handleSubmit */}
+                <button className="submit-button" type="submit">
+                  Submit
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
