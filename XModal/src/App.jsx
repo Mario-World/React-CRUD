@@ -1,94 +1,182 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import "./App.css";
 
-const Form = () => {
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dob, setDob] = useState('');
-  const [errors, setErrors] = useState({});
+function App() {
+  const [open, setOpen] = useState(false);
 
-  // Email validation regex (general check for valid format)
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    dob: ""
+  });
+
+  const openModal = () => setOpen(true);
+
+  // Do NOT reset form here (important for Cypress)
+  const closeModal = () => {
+    setOpen(false);
+  };
+
+  const handleOutsideClick = (e) => {
+    if (e.target.className === "modal") {
+      closeModal();
+    }
+  };
+
+  // -------------------------
+  // VALIDATION HELPERS
+  // -------------------------
+
+  // Email regex (your updated pattern)
   const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const validateEmail = (email) => emailPattern.test(email);
 
-  // Phone validation (check exactly 10 digits)
-  const phonePattern = /^\d{10}$/; // Matches exactly 10 digits
+  // Phone regex — EXACTLY 10 digits (per new requirement)
+  const phonePattern = /^\d{10}$/;
   const validatePhoneNumber = (phone) => phonePattern.test(phone);
 
-  // Date of Birth validation
-  const validateDOB = (dob) => {
+  // DOB — must be valid + must be at least 18
+  const calculateAge = (dob) => {
     const today = new Date();
     const birthDate = new Date(dob);
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    let m = today.getMonth() - birthDate.getMonth();
+
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      return age - 1;
+      age--;
     }
     return age;
   };
-  
-  const isAdult = (dob) => validateDOB(dob) >= 18;
+
+  // -------------------------
+  // FORM SUBMIT HANDLER
+  // -------------------------
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate inputs
-    const newErrors = {};
-    if (!email) newErrors.email = 'Email is required.'; // Blank email check
-    else if (!validateEmail(email)) newErrors.email = 'Please enter a valid email.';
-    
-    if (!phone) newErrors.phone = 'Phone number is required.'; // Blank phone check
-    else if (!validatePhoneNumber(phone)) newErrors.phone = 'Phone number must be exactly 10 digits.';
-    
-    if (!dob) newErrors.dob = 'Date of birth is required.'; // Blank DOB check
-    else if (!isAdult(dob)) newErrors.dob = 'You must be at least 18 years old.';
+    const { username, email, phone, dob } = formData;
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-    } else {
-      setErrors({});
-      // Proceed with form submission (e.g., send data to an API or store in state)
-      alert('Form submitted successfully!');
+    // 1️⃣ USERNAME — Blank Check
+    if (!username.trim()) {
+      alert("Please enter Username.");
+      return;
     }
+
+    // 2️⃣ EMAIL — Blank Check
+    if (!email.trim()) {
+      alert("Please enter Email.");
+      return;
+    }
+
+    // 3️⃣ EMAIL — Format Check
+    if (!validateEmail(email)) {
+      alert("Invalid email. Please check your email address.");
+      return;
+    }
+
+    // 4️⃣ PHONE — Blank Check
+    if (!phone.trim()) {
+      alert("Please enter Phone Number.");
+      return;
+    }
+
+    // 5️⃣ PHONE — 10 Digit Check
+    if (!validatePhoneNumber(phone)) {
+      alert("Invalid phone number. Please enter a 10-digit phone number.");
+      return;
+    }
+
+    // 6️⃣ DOB — Blank Check
+    if (!dob.trim()) {
+      alert("Please enter Date of Birth.");
+      return;
+    }
+
+    // 7️⃣ DOB — Future date or underage
+    const birth = new Date(dob);
+    const now = new Date();
+
+    if (birth > now || calculateAge(dob) < 18) {
+      alert("Invalid date of birth. Date cannot be in the future.");
+      return;
+    }
+
+    // SUCCESS → Reset form + close modal
+    setFormData({ username: "", email: "", phone: "", dob: "" });
+    closeModal();
   };
 
   return (
-    <div className="form-container">
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
-          <input 
-            type="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-          />
-          {errors.email && <span className="error">{errors.email}</span>}
+    <div className="app">
+      <h2>User Details Modal</h2>
+
+      {!open && (
+        <button className="modal-open" onClick={openModal}>
+          Open Form
+        </button>
+      )}
+
+      {open && (
+        <div className="modal" onClick={handleOutsideClick}>
+          <div className="modal-content">
+            <h2>Fill Details</h2>
+
+            <form onSubmit={handleSubmit} noValidate>
+              
+              <label htmlFor="username">Username:</label>
+              <input
+                id="username"
+                type="text"
+                value={formData.username}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
+              />
+
+              <label htmlFor="email">Email Address:</label>
+              <input
+                id="email"
+                type="text"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+              />
+
+              <label htmlFor="phone">Phone Number:</label>
+              <input
+                id="phone"
+                type="text"
+                placeholder="10-digit number"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+              />
+
+              <label htmlFor="dob">Date of Birth:</label>
+              <input
+                id="dob"
+                type="date"
+                value={formData.dob}
+                onChange={(e) =>
+                  setFormData({ ...formData, dob: e.target.value })
+                }
+              />
+
+              <button type="submit" className="submit-button">
+                Submit
+              </button>
+            </form>
+
+          </div>
         </div>
-        
-        <div>
-          <label>Phone Number:</label>
-          <input 
-            type="text" 
-            value={phone} 
-            onChange={(e) => setPhone(e.target.value)} 
-          />
-          {errors.phone && <span className="error">{errors.phone}</span>}
-        </div>
-        
-        <div>
-          <label>Date of Birth:</label>
-          <input 
-            type="date" 
-            value={dob} 
-            onChange={(e) => setDob(e.target.value)} 
-          />
-          {errors.dob && <span className="error">{errors.dob}</span>}
-        </div>
-        
-        <button type="submit">Submit</button>
-      </form>
+      )}
     </div>
   );
-};
+}
 
-export default Form;
+export default App;
